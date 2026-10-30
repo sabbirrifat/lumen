@@ -11,6 +11,8 @@ export interface ScanPlan {
   detail: string;
   /** Set when the size comes from a tool (docker) instead of measuring targets. */
   size?: number;
+  /** Friendly names for targets, shown instead of the path. */
+  labels?: Record<string, string>;
 }
 
 export interface CleanupRule {
@@ -24,5 +26,7 @@ export interface CleanupRule {
   scan(ctx: EngineContext): Promise<ScanPlan>;
   /** Custom cleanup. By default `truncate` files are emptied and `targets` deleted. */
   clean?(plan: ScanPlan, ctx: EngineContext): Promise<void>;
+  /** Targets are the user's own files (installers, backups): always move them to the Trash. */
+  toTrash?: boolean;
   allowNodeModules?: boolean;
 }

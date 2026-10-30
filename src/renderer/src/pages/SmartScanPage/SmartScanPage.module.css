@@ -97,10 +97,14 @@
   animation: pulse-soft 2.2s ease-in-out infinite;
 }
 
+.notice {
+  margin-top: 14px;
+}
+
 .categories {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
   margin-top: 22px;
 }
 
@@ -153,8 +157,12 @@
 }
 
 .cardLabel {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .cardSize {

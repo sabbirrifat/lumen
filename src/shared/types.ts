@@ -1,6 +1,6 @@
 // The contract between the main process (engine + IPC) and the renderer.
 
-export type RuleCategory = 'developer' | 'xcode' | 'apps' | 'system' | 'ai';
+export type RuleCategory = 'system' | 'apps' | 'files' | 'devices' | 'developer' | 'ai';
 export type Safety = 'safe' | 'review';
 
 /** Anything smaller than this isn't worth offering. */
@@ -9,6 +9,8 @@ export const MIN_SIZE = 1024 * 1024;
 export interface SizedPath {
   path: string;
   size: number;
+  /** A friendlier name than the path, e.g. "Sam's iPhone · backed up 3 Mar 2025". */
+  label?: string;
 }
 
 export interface RuleResult {
@@ -20,6 +22,8 @@ export interface RuleResult {
   detail: string;
   /** Bytes this rule would free. */
   size: number;
+  /** Files go to the Trash instead of being deleted (user files like installers and backups). */
+  toTrash: boolean;
   /** Why it can't be cleaned right now, e.g. "Quit Google Chrome to clean". */
   blocked?: string;
   /** The largest targets, for the expandable list. */
@@ -44,13 +48,17 @@ export interface CleanProgress {
 export interface CleanOutcome {
   id: string;
   name: string;
+  /** Bytes deleted, so the space is free now. */
   freed: number;
+  /** Bytes moved to the Trash: free once the Trash is emptied. */
+  trashed: number;
   error?: string;
 }
 
 export interface CleanSummary {
   outcomes: CleanOutcome[];
   freed: number;
+  trashed: number;
   freeBefore: number;
   freeAfter: number;
 }

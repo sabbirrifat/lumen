@@ -1,7 +1,7 @@
 import path from 'node:path';
 import type { EngineContext } from '../context';
 import { list } from '../fsutil';
-import { libPath, pathsRule } from './helpers';
+import { contentsRule, libPath, pathsRule } from './helpers';
 import type { CleanupRule } from './types';
 
 const PROFILE = /^(Default|Profile \d+|Guest Profile|System Profile)$/;
@@ -47,10 +47,59 @@ function electronApp(id: string, name: string, app: string, dataDirs: string[]):
   });
 }
 
+/** Safari keeps its web cache in two places, both protected by macOS privacy controls. */
+const safari = pathsRule({
+  id: 'safari',
+  name: 'Safari cache',
+  category: 'apps',
+  app: 'Safari',
+  explain: 'Web page caches Safari keeps to load sites faster. History, bookmarks, passwords and open tabs stay. Needs Full Disk Access.',
+  roots: (ctx) => [libPath(ctx, 'Caches'), libPath(ctx, 'Containers', 'com.apple.Safari', 'Data', 'Library', 'Caches')],
+  paths: async (ctx) => [
+    libPath(ctx, 'Caches', 'com.apple.Safari'),
+    libPath(ctx, 'Containers', 'com.apple.Safari', 'Data', 'Library', 'Caches', 'com.apple.Safari'),
+  ],
+});
+
+const FIREFOX_CACHES = ['cache2', 'startupCache', 'thumbnails', 'jumpListCache'];
+
+/** Firefox keeps each profile's disk cache under ~/Library/Caches, apart from its data. */
+const firefox = pathsRule({
+  id: 'firefox',
+  name: 'Firefox cache',
+  category: 'apps',
+  app: 'Firefox',
+  explain: 'Web page caches for every Firefox profile. History, bookmarks, passwords and open tabs stay.',
+  roots: (ctx) => [libPath(ctx, 'Caches', 'Firefox')],
+  async paths(ctx) {
+    const profiles = libPath(ctx, 'Caches', 'Firefox', 'Profiles');
+    return (await list(profiles)).flatMap((profile) => FIREFOX_CACHES.map((name) => path.join(profiles, profile, name)));
+  },
+});
+
+const mailAttachments = contentsRule({
+  id: 'mail-attachments',
+  name: 'Mail attachment copies',
+  category: 'apps',
+  safety: 'review',
+  app: 'Mail',
+  explain: 'Copies of attachments you opened from Mail. The originals stay in your mailbox, so Mail downloads them again when you open one. Needs Full Disk Access.',
+  dirs: (ctx) => [libPath(ctx, 'Containers', 'com.apple.mail', 'Data', 'Library', 'Mail Downloads')],
+});
+
 export const appRules: CleanupRule[] = [
+  safari,
   chromiumBrowser('chrome', 'Google Chrome', 'Google/Chrome'),
+  firefox,
   chromiumBrowser('edge', 'Microsoft Edge', 'Microsoft Edge'),
   chromiumBrowser('brave', 'Brave Browser', 'BraveSoftware/Brave-Browser'),
+  chromiumBrowser('arc', 'Arc', 'Arc/User Data'),
+  chromiumBrowser('vivaldi', 'Vivaldi', 'Vivaldi'),
+  mailAttachments,
+  electronApp('teams', 'Microsoft Teams', 'Microsoft Teams', ['Application Support/Microsoft/Teams']),
+  electronApp('notion', 'Notion', 'Notion', ['Application Support/Notion']),
+  electronApp('figma', 'Figma', 'Figma', ['Application Support/Figma']),
+  electronApp('obsidian', 'Obsidian', 'Obsidian', ['Application Support/obsidian']),
   electronApp('vscode', 'VS Code', 'Visual Studio Code', ['Application Support/Code']),
   electronApp('cursor', 'Cursor', 'Cursor', ['Application Support/Cursor']),
   electronApp('windsurf', 'Windsurf', 'Windsurf', ['Application Support/Windsurf']),

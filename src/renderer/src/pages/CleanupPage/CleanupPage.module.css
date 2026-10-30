@@ -5,6 +5,10 @@
   flex-direction: column;
 }
 
+.notice:not(:empty) {
+  margin: -8px 0 22px;
+}
+
 .groups {
   flex: 1;
   display: flex;

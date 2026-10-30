@@ -1,21 +1,24 @@
 import type { ComponentType } from 'react';
 import type { RuleCategory } from '~shared/types';
-import { ChipIcon, CodeIcon, HammerIcon, type IconProps, OrbitIcon, WindowIcon } from '~components/icons';
+import { ChipIcon, CodeIcon, DownloadIcon, type IconProps, OrbitIcon, PhoneIcon, WindowIcon } from '~components/icons';
 
 export interface CategoryInfo {
   id: RuleCategory;
   label: string;
-  blurb: string;
+  /** Fits the narrow category cards on Smart Scan. */
+  short: string;
   color: string;
   Icon: ComponentType<IconProps>;
 }
 
+/** In display order: everyday categories first, then the ones for developers. */
 export const CATEGORIES: CategoryInfo[] = [
-  { id: 'developer', label: 'Developer tools', blurb: 'Package caches, old toolchains, logs', color: 'var(--cat-developer)', Icon: CodeIcon },
-  { id: 'xcode', label: 'Xcode & simulators', blurb: 'Build data and simulator devices', color: 'var(--cat-xcode)', Icon: HammerIcon },
-  { id: 'apps', label: 'App caches', blurb: 'Browsers, editors and chat apps', color: 'var(--cat-apps)', Icon: WindowIcon },
-  { id: 'system', label: 'System junk', blurb: 'App caches, logs, crash reports', color: 'var(--cat-system)', Icon: ChipIcon },
-  { id: 'ai', label: 'AI tools', blurb: 'Downloaded models and agent data', color: 'var(--cat-ai)', Icon: OrbitIcon },
+  { id: 'system', label: 'System junk', short: 'System junk', color: 'var(--cat-system)', Icon: ChipIcon },
+  { id: 'apps', label: 'Browsers & apps', short: 'Apps', color: 'var(--cat-apps)', Icon: WindowIcon },
+  { id: 'files', label: 'Downloads & Trash', short: 'Downloads', color: 'var(--cat-files)', Icon: DownloadIcon },
+  { id: 'devices', label: 'iPhone & iPad', short: 'iPhone & iPad', color: 'var(--cat-devices)', Icon: PhoneIcon },
+  { id: 'developer', label: 'Developer tools', short: 'Developer', color: 'var(--cat-developer)', Icon: CodeIcon },
+  { id: 'ai', label: 'AI tools', short: 'AI tools', color: 'var(--cat-ai)', Icon: OrbitIcon },
 ];
 
 export const categoryInfo = (id: RuleCategory) => CATEGORIES.find((c) => c.id === id) ?? CATEGORIES[0];

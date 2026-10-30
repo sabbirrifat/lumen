@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { _electron as electron, expect, test } from '@playwright/test';
@@ -44,6 +44,24 @@ async function buildFixture(root: string) {
   await file('Applications/Foo Studio.app/Contents/MacOS/foo', 5 * MB);
   await file('Library/Application Support/Foo Studio/data.db', 2 * MB);
   await file('Library/Preferences/com.example.foostudio.plist', 0, '<plist/>');
+  // Everyday junk, not just developer caches.
+  const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const old = async (p: string, size: number) => {
+    const target = await file(p, size);
+    await utimes(target, monthAgo, monthAgo);
+  };
+  await file('Library/Caches/Firefox/Profiles/abc.default-release/cache2/entries/1', 18 * MB);
+  await file('Library/iTunes/iPhone Software Updates/iPhone_Restore.ipsw', 35 * MB);
+  await file('Library/Containers/com.apple.mail/Data/Library/Mail Downloads/A1/Invoice.pdf', 4 * MB);
+  await file('Library/Containers/org.removed.app/Data/Library/state.db', 9 * MB);
+  await file('Library/Application Support/MobileSync/Backup/00008110-001A/Manifest.db', 26 * MB);
+  await file(
+    'Library/Application Support/MobileSync/Backup/00008110-001A/Info.plist',
+    0,
+    '<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>Device Name</key><string>Old iPhone</string><key>Last Backup Date</key><date>2024-05-02T09:00:00Z</date></dict></plist>',
+  );
+  await old('Downloads/Holiday Video.mp4.crdownload', 12 * MB);
+  await old('Downloads/Zoom Installer.pkg', 14 * MB);
   const personal = [await file('Documents/thesis.pdf', MB), await file('Library/Application Support/Google/Chrome/Default/Bookmarks', 1000)];
   return { home, brew, personal };
 }
@@ -97,7 +115,7 @@ test('scan, clean and tour every page', async () => {
 
     await page.getByRole('button', { name: 'Review items' }).click();
     await expect(page.getByRole('heading', { name: 'Cleanup' })).toBeVisible();
-    await page.getByText('npm download cache').click();
+    await page.getByText('iPhone and iPad backups').click();
     await shot('05-cleanup');
 
     await page.getByRole('button', { name: /^Clean / }).last().click();
@@ -106,8 +124,20 @@ test('scan, clean and tour every page', async () => {
     expect(existsSync(path.join(home, '.npm/_cacache/content-v2'))).toBe(false);
     expect(existsSync(path.join(home, '.cache/puppeteer/chrome/mac_arm-149.0.2'))).toBe(true);
     for (const p of personal) expect(existsSync(p)).toBe(true);
-    // Review items (Hugging Face, Antigravity, simulators) stay until chosen.
-    expect(existsSync(path.join(home, '.cache/huggingface/hub'))).toBe(true);
+    // Everyday safe items are cleaned; the unfinished download went to the (fixture's) Trash.
+    expect(existsSync(path.join(home, 'Library/Caches/Firefox/Profiles/abc.default-release/cache2'))).toBe(false);
+    expect(existsSync(path.join(home, 'Library/iTunes/iPhone Software Updates/iPhone_Restore.ipsw'))).toBe(false);
+    expect(existsSync(path.join(home, '.Trash/Holiday Video.mp4.crdownload'))).toBe(true);
+    // Review items stay until chosen.
+    for (const p of [
+      '.cache/huggingface/hub',
+      'Downloads/Zoom Installer.pkg',
+      'Library/Containers/org.removed.app',
+      'Library/Application Support/MobileSync/Backup/00008110-001A',
+      'Library/Containers/com.apple.mail/Data/Library/Mail Downloads/A1/Invoice.pdf',
+    ]) {
+      expect(existsSync(path.join(home, p)), p).toBe(true);
+    }
 
     await page.getByRole('button', { name: 'Space Lens' }).click();
     await expect(page.getByRole('heading', { name: 'Space Lens' })).toBeVisible();

@@ -1,0 +1,22 @@
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 640px;
+  padding: 10px 10px 10px 16px;
+  border-radius: var(--radius-m);
+  background: rgba(255, 198, 107, 0.07);
+  border: 1px solid rgba(255, 198, 107, 0.2);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+  text-align: left;
+}
+
+.notice span {
+  flex: 1;
+}
+
+.icon {
+  flex: none;
+  color: var(--amber);
+}
