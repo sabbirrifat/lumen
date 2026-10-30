@@ -1,0 +1,23 @@
+/* Bigger than its box and faded at the rim, so the bloom haze never shows a hard edge. */
+.canvas {
+  position: absolute !important;
+  inset: -14%;
+  width: auto !important;
+  height: auto !important;
+  mix-blend-mode: screen;
+  -webkit-mask-image: radial-gradient(closest-side, #000 58%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 58%, transparent 100%);
+  pointer-events: none;
+}
+
+.still {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 32%, rgba(255, 255, 255, 0.9), transparent 22%),
+    radial-gradient(circle at 40% 40%, #4fe3c1, #8b7bff 55%, #ff7ab6 100%);
+  box-shadow:
+    0 0 60px rgba(139, 123, 255, 0.55),
+    0 0 140px rgba(79, 227, 193, 0.3);
+}

@@ -1,0 +1,170 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px 40px 30px;
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Scales with the window so the category cards still fit at the minimum height. */
+.orb {
+  position: relative;
+  height: min(380px, 41vh);
+  aspect-ratio: 1;
+  margin-bottom: 4px;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.ring svg {
+  width: 92%;
+  height: 92%;
+}
+
+.copy {
+  position: relative;
+  min-height: 132px;
+  max-width: 560px;
+}
+
+.overline {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.number {
+  font-size: 58px;
+  line-height: 1;
+}
+
+.lede {
+  margin: 12px auto 0;
+  max-width: 470px;
+  color: var(--fg-muted);
+}
+
+.current {
+  color: var(--fg);
+}
+
+.skipped {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--amber);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  margin-top: 18px;
+}
+
+.status {
+  color: var(--fg-subtle);
+  font-size: 13px;
+  animation: pulse-soft 2.2s ease-in-out infinite;
+}
+
+.categories {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 12px 14px 11px;
+  border-radius: var(--radius-m);
+  background: var(--glass);
+  border: 1px solid var(--border);
+  text-align: left;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  transition: border-color 0.25s;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  inset: auto -30% -60% auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.1;
+  filter: blur(30px);
+  transition: opacity 0.3s;
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+}
+
+.card:hover::after {
+  opacity: 0.22;
+}
+
+.cardIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 8px;
+  border-radius: 9px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.cardLabel {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.cardSize {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardMeta {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}

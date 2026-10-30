@@ -1,0 +1,85 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 6, 12, 0.7);
+  backdrop-filter: blur(18px);
+}
+
+.card {
+  width: min(520px, calc(100vw - 64px));
+  padding: 40px 40px 34px;
+  border-radius: 28px;
+  background: rgba(18, 20, 36, 0.92);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 60px 160px -40px rgba(0, 0, 0, 0.95), var(--shadow-glow);
+  overflow: hidden;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.step h1 {
+  margin: 18px 0 8px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.step p {
+  margin: 0 0 18px;
+  color: var(--fg-muted);
+}
+
+.mark {
+  filter: drop-shadow(0 0 30px rgba(139, 123, 255, 0.6));
+  animation: drift 8s ease-in-out infinite;
+}
+
+.lock {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: var(--aurora-soft);
+  border: 1px solid var(--border);
+}
+
+.points {
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg-muted);
+}
+
+.points svg {
+  color: var(--teal);
+  flex: none;
+}
+
+.granted {
+  color: var(--teal) !important;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}

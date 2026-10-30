@@ -1,0 +1,114 @@
+.page {
+  padding: 56px 40px 28px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: -8px 0 18px;
+  font-size: 13px;
+}
+
+.crumbs button {
+  padding: 3px 7px;
+  border-radius: 7px;
+  color: var(--fg-muted);
+  transition: background 0.2s, color 0.2s;
+}
+
+.crumbs button:hover {
+  color: var(--fg);
+  background: var(--surface-hover);
+}
+
+.crumbs > span:last-of-type button {
+  color: var(--fg);
+}
+
+.sep {
+  color: var(--fg-subtle);
+  margin: 0 1px;
+}
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(300px, 400px);
+  gap: 28px;
+  min-height: 0;
+}
+
+.chart {
+  display: grid;
+  place-items: center;
+  align-self: start;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.emptyNote {
+  color: var(--fg-subtle);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.rowHover {
+  background: var(--surface-hover);
+}
+
+.rowOpenable {
+  cursor: pointer;
+}
+
+.rowIcon {
+  color: var(--fg-muted);
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.rowName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.rowSize {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.rowActions {
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.rowHover .rowActions {
+  opacity: 1;
+}

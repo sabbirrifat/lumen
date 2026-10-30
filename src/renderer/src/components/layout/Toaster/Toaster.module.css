@@ -1,0 +1,44 @@
+.stack {
+  position: fixed;
+  bottom: 22px;
+  left: var(--sidebar-width);
+  right: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 11px 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(22, 24, 42, 0.94);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 18px 50px -18px rgba(0, 0, 0, 0.9);
+  font-size: 13px;
+  text-align: left;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--violet);
+  box-shadow: 0 0 10px currentColor;
+}
+
+.success .dot {
+  background: var(--teal);
+}
+
+.error .dot {
+  background: var(--danger);
+}
