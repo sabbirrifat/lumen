@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { _electron as electron, expect, test } from '@playwright/test';
+import type { LumenApi } from '~shared/types';
 
 const MB = 1024 * 1024;
 const SHOTS = path.join(__dirname, '..', 'test-results', 'screens');
@@ -56,6 +57,9 @@ test('scan, clean and tour every page', async () => {
     env: { ...process.env, LUMEN_HOME: home, LUMEN_BREW_PREFIX: brew, LUMEN_USER_DATA: path.join(root, 'userData') },
   });
   const errors: string[] = [];
+  const mainLog: string[] = [];
+  app.process().stdout?.on('data', (d) => mainLog.push(String(d)));
+  app.process().stderr?.on('data', (d) => mainLog.push(String(d)));
   try {
     const page = await app.firstWindow();
     page.on('console', (msg) => msg.type() === 'error' && errors.push(msg.text()));
@@ -65,7 +69,20 @@ test('scan, clean and tour every page', async () => {
       await page.screenshot({ path: path.join(SHOTS, `${name}.png`) });
     };
 
-    await expect(page.getByText('Welcome to Lumen')).toBeVisible();
+    // CI machines start Electron slowly; if the welcome never shows, print what the app sees.
+    try {
+      await expect(page.getByText('Welcome to Lumen')).toBeVisible({ timeout: 20_000 });
+    } catch (error) {
+      const state = await page.evaluate(async () => {
+        const { lumen } = globalThis as unknown as { lumen: LumenApi };
+        return {
+          settings: await lumen.getSettings().catch((e: Error) => `error: ${e.message}`),
+          platform: await lumen.platform().catch((e: Error) => `error: ${e.message}`),
+        };
+      });
+      console.log('App state:', JSON.stringify(state), '\nPage errors:', errors, '\nMain log:', mainLog.join(''));
+      throw error;
+    }
     await shot('01-onboarding');
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByRole('button', { name: /Skip for now|Start using Lumen/ }).click();
