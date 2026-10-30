@@ -3,6 +3,7 @@ import type { AppInfo, Leftover } from '~shared/types';
 import type { EngineContext } from './context';
 import { exec } from './exec';
 import { list, mapLimit } from './fsutil';
+import { readPlist } from './plist';
 import { sizesOf } from './size';
 
 /** ~/Library folders where apps leave files behind. */
@@ -31,14 +32,7 @@ interface BundleInfo {
   CFBundleShortVersionString?: string;
 }
 
-async function readBundle(appPath: string): Promise<BundleInfo | null> {
-  const { ok, stdout } = await exec('plutil', ['-convert', 'json', '-o', '-', path.join(appPath, 'Contents', 'Info.plist')]);
-  try {
-    return ok ? (JSON.parse(stdout) as BundleInfo) : null;
-  } catch {
-    return null;
-  }
-}
+const readBundle = (appPath: string): Promise<BundleInfo | null> => readPlist(path.join(appPath, 'Contents', 'Info.plist'));
 
 /** Apps the user installed. Apple's own apps are left out: macOS protects and reinstalls them. */
 export async function listApps(ctx: EngineContext, dirs = applicationDirs(ctx)): Promise<AppInfo[]> {
@@ -83,3 +77,29 @@ export async function findLeftovers(ctx: EngineContext, app: Pick<AppInfo, 'bund
 }
 
 export const leftoverRoots = (ctx: EngineContext) => LEFTOVER_DIRS.map((d) => path.join(ctx.home, 'Library', d));
+
+/** Spotlight lists hundreds of apps on a real Mac; far fewer means its index can't be trusted. */
+const MIN_SPOTLIGHT_APPS = 10;
+
+/**
+ * Lower-cased bundle ids of every installed or running app: Applications folders, plus
+ * Spotlight's view of apps anywhere on disk. Null when Spotlight can't answer, because then
+ * an app's data could be mistaken for a leftover.
+ */
+export async function installedBundleIds(ctx: EngineContext): Promise<Set<string> | null> {
+  const ids = new Set([...ctx.processes.bundleIds].map((id) => id.toLowerCase()));
+  const paths: string[] = [];
+  for (const dir of applicationDirs(ctx)) {
+    paths.push(...(await list(dir)).filter((name) => name.endsWith('.app')).map((name) => path.join(dir, name)));
+  }
+  for (const bundle of await mapLimit(paths, 8, readBundle)) {
+    if (bundle?.CFBundleIdentifier) ids.add(bundle.CFBundleIdentifier.toLowerCase());
+  }
+  if (ctx.external) {
+    const query = await exec('mdfind', ['-attr', 'kMDItemCFBundleIdentifier', 'kMDItemContentType == "com.apple.application-bundle"'], 60_000);
+    const found = [...query.stdout.matchAll(/kMDItemCFBundleIdentifier = (\S+)/g)].map((m) => m[1].toLowerCase());
+    if (!query.ok || found.length < MIN_SPOTLIGHT_APPS) return null;
+    found.forEach((id) => ids.add(id));
+  }
+  return ids;
+}

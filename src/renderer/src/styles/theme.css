@@ -24,10 +24,11 @@
   --aurora-soft: linear-gradient(120deg, rgba(79, 227, 193, 0.18), rgba(139, 123, 255, 0.18) 55%, rgba(255, 122, 182, 0.18));
 
   /* Category colours */
-  --cat-developer: var(--teal);
-  --cat-xcode: var(--cyan);
-  --cat-apps: var(--violet);
   --cat-system: var(--amber);
+  --cat-apps: var(--violet);
+  --cat-files: var(--cyan);
+  --cat-devices: #9db4ff;
+  --cat-developer: var(--teal);
   --cat-ai: var(--rose);
 
   --radius-s: 10px;

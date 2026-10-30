@@ -6,7 +6,7 @@ import type { CleanupRule } from './types';
 const simulators: CleanupRule = {
   id: 'simulators',
   name: 'iOS simulator devices',
-  category: 'xcode',
+  category: 'developer',
   safety: 'review',
   explain: 'Every simulator device and the apps and data inside it. Xcode creates fresh ones when you need them.',
   roots: (ctx) => [libPath(ctx, 'Developer', 'CoreSimulator', 'Devices')],
@@ -27,7 +27,7 @@ export const xcodeRules: CleanupRule[] = [
   contentsRule({
     id: 'derived-data',
     name: 'Xcode DerivedData',
-    category: 'xcode',
+    category: 'developer',
     app: 'Xcode',
     explain: 'Build products and indexes. Xcode rebuilds them the next time you open a project.',
     dirs: (ctx) => [libPath(ctx, 'Developer', 'Xcode', 'DerivedData')],
@@ -35,7 +35,7 @@ export const xcodeRules: CleanupRule[] = [
   contentsRule({
     id: 'device-support',
     name: 'Device support files',
-    category: 'xcode',
+    category: 'developer',
     safety: 'review',
     app: 'Xcode',
     explain: 'Debug symbols copied from devices you’ve connected. Xcode copies them again (slowly) next time.',
@@ -45,7 +45,7 @@ export const xcodeRules: CleanupRule[] = [
   contentsRule({
     id: 'xcode-archives',
     name: 'Xcode archives',
-    category: 'xcode',
+    category: 'developer',
     safety: 'review',
     app: 'Xcode',
     explain: 'Builds you archived for release. Keep the ones you need to symbolicate crash reports.',
@@ -55,7 +55,7 @@ export const xcodeRules: CleanupRule[] = [
   contentsRule({
     id: 'simulator-caches',
     name: 'Simulator caches',
-    category: 'xcode',
+    category: 'developer',
     explain: 'Caches the simulator runtime builds up. Rebuilt automatically.',
     dirs: (ctx) => [libPath(ctx, 'Developer', 'CoreSimulator', 'Caches')],
   }),

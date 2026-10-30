@@ -238,6 +238,20 @@ export const PackageIcon = (p: IconProps) => (
   </Svg>
 );
 
+export const PhoneIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="6.5" y="2.8" width="11" height="18.4" rx="2.8" />
+    <path d="M10.5 5.6h3M11.2 18.2h1.6" />
+  </Svg>
+);
+
+export const DownloadIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5" />
+    <path d="M4.5 15.5v2a2.5 2.5 0 0 0 2.5 2.5h10a2.5 2.5 0 0 0 2.5-2.5v-2" />
+  </Svg>
+);
+
 export const LockIcon = (p: IconProps) => (
   <Svg {...p}>
     <rect x="5" y="10.5" width="14" height="10" rx="2.5" />

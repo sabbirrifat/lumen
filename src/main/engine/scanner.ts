@@ -56,7 +56,7 @@ export function toResult({ rule, plan, size, sizes }: PlannedRule): RuleResult {
   const items = [...sizes.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, MAX_ITEMS)
-    .map(([path, itemSize]) => ({ path, size: itemSize }));
+    .map(([path, itemSize]) => ({ path, size: itemSize, label: plan.labels?.[path] }));
   return {
     id: rule.id,
     name: rule.name,
@@ -66,6 +66,7 @@ export function toResult({ rule, plan, size, sizes }: PlannedRule): RuleResult {
     detail: plan.detail,
     blocked: plan.blocked,
     size,
+    toTrash: !!rule.toTrash,
     items,
     itemCount: plan.targets.length + (plan.truncate?.length ?? 0),
   };

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { BroomIcon, ClockIcon, RefreshIcon, SparkleIcon } from '~components/icons';
 import { Orb } from '~components/three/Orb';
+import { AccessNotice } from '~components/ui/AccessNotice';
 import { BigBytes } from '~components/ui/BigBytes';
 import { Button } from '~components/ui/Button';
 import { ProgressRing } from '~components/ui/ProgressRing';
@@ -52,7 +53,8 @@ export function SmartScanPage() {
                 <p className={styles.overline}>Smart Scan</p>
                 <h1 className={styles.title}>Clear the clutter, keep the calm.</h1>
                 <p className={styles.lede}>
-                  Lumen checks 30+ places where developer tools, apps and macOS pile up junk, and only offers what’s safe to remove.
+                  Lumen checks 50+ places where macOS, browsers, apps, downloads and developer tools pile up junk, and only offers what’s safe to
+                  remove.
                 </p>
               </motion.div>
             )}
@@ -79,16 +81,19 @@ export function SmartScanPage() {
                 <p className={styles.overline}>Cleaning</p>
                 <BigBytes bytes={cleanProgress?.freed ?? 0} className={styles.number} />
                 <p className={styles.lede}>
-                  freed · <span className={styles.current}>{cleanProgress?.current || 'finishing up'}</span>
+                  cleaned · <span className={styles.current}>{cleanProgress?.current || 'finishing up'}</span>
                 </p>
               </motion.div>
             )}
             {phase === 'done' && summary && (
               <motion.div key="done" {...fade}>
                 <p className={styles.overline}>All clear</p>
-                <BigBytes bytes={summary.freed} className={styles.number} />
+                <BigBytes bytes={summary.freed + summary.trashed} className={styles.number} />
                 <p className={styles.lede}>
-                  freed. You now have {formatBytes(summary.freeAfter)} free, up from {formatBytes(summary.freeBefore)}.
+                  {summary.trashed > 0
+                    ? `cleaned. ${formatBytes(summary.trashed)} of it went to the Trash; empty the Trash to free that space too. `
+                    : 'freed. '}
+                  You now have {formatBytes(summary.freeAfter)} free, up from {formatBytes(summary.freeBefore)}.
                 </p>
                 {summary.outcomes
                   .filter((o) => o.error)
@@ -138,6 +143,12 @@ export function SmartScanPage() {
             </>
           )}
         </div>
+        {/* Results leave no room for it here; the Cleanup page repeats it. */}
+        {phase === 'idle' && (
+          <div className={styles.notice}>
+            <AccessNotice />
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -161,9 +172,13 @@ export function SmartScanPage() {
                   <span className={styles.cardIcon}>
                     <cat.Icon size={18} />
                   </span>
-                  <span className={styles.cardLabel}>{cat.label}</span>
+                  <span className={styles.cardLabel} title={cat.label}>
+                    {cat.short}
+                  </span>
                   <span className={styles.cardSize}>{size ? formatBytes(size) : '—'}</span>
-                  <span className={styles.cardMeta}>{rules.length ? plural(rules.length, 'item') : cat.blurb}</span>
+                  <span className={styles.cardMeta}>
+                    {rules.length ? plural(rules.length, 'item') : phase === 'scanning' ? 'Checking…' : 'Nothing found'}
+                  </span>
                 </motion.button>
               );
             })}

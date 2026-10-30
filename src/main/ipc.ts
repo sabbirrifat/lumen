@@ -1,4 +1,4 @@
-import { readdir, statfs } from 'node:fs/promises';
+import { mkdir, readdir, rename, statfs } from 'node:fs/promises';
 import path from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, shell, type IpcMainInvokeEvent } from 'electron';
 import type { AppInfo, DirEntry, LumenEvents, Settings, TrashResult, UninstallResult } from '~shared/types';
@@ -18,6 +18,18 @@ import { applicationDirs, findLeftovers, leftoverRoots, listApps } from '~engine
 const send = <K extends keyof LumenEvents>(event: IpcMainInvokeEvent, channel: K, payload: LumenEvents[K]) => {
   if (!event.sender.isDestroyed()) event.sender.send(channel, payload);
 };
+
+/**
+ * With a fixture home (LUMEN_HOME, used by the end-to-end test), "the Trash" is that home's own
+ * .Trash, so tests never put anything in the real one.
+ */
+async function moveToTrash(target: string): Promise<void> {
+  const fixture = process.env.LUMEN_HOME;
+  if (!fixture) return shell.trashItem(target);
+  const trash = path.join(fixture, '.Trash');
+  await mkdir(trash, { recursive: true });
+  await rename(target, path.join(trash, path.basename(target)));
+}
 
 /** Validates a renderer-supplied path list so a bad message can't widen what we touch. */
 const paths = (value: unknown): string[] =>
@@ -55,7 +67,7 @@ export function registerIpc() {
     for (const target of targets) {
       try {
         await assertTrashable(target, ctx, roots);
-        await shell.trashItem(target);
+        await moveToTrash(target);
         result.trashed.push(target);
         result.freed += sizes.get(target) ?? 0;
       } catch (error) {
@@ -93,16 +105,18 @@ export function registerIpc() {
     const settings = await store.settings();
     const freeBefore = (await freeSpace(ctx.home)).free;
     const outcomes = await cleanRules(ctx, rules, {
-      trash: settings.cachesToTrash ? (target) => shell.trashItem(target) : undefined,
+      moveToTrash,
+      cachesToTrash: settings.cachesToTrash,
       onProgress: (progress) => send(event, 'clean:progress', progress),
     });
     const freed = sum(outcomes.map((o) => o.freed));
-    const cleaned = outcomes.filter((o) => !o.error && o.freed > 0);
+    const trashed = sum(outcomes.map((o) => o.trashed));
+    const cleaned = outcomes.filter((o) => !o.error && o.freed + o.trashed > 0);
     if (cleaned.length) {
-      await store.addHistory({ kind: 'cleanup', label: cleaned.map((o) => o.name).join(', '), freed, items: cleaned.length });
+      await store.addHistory({ kind: 'cleanup', label: cleaned.map((o) => o.name).join(', '), freed: freed + trashed, items: cleaned.length });
     }
     spaceLensCache.clear();
-    return { outcomes, freed, freeBefore, freeAfter: (await freeSpace(ctx.home)).free };
+    return { outcomes, freed, trashed, freeBefore, freeAfter: (await freeSpace(ctx.home)).free };
   });
 
   ipcMain.handle('spaceLens', async (event, dir: unknown, refresh: unknown) => {

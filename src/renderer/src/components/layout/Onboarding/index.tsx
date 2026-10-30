@@ -29,10 +29,10 @@ export function Onboarding() {
                     <LumenMark size={72} />
                   </div>
                   <h1>Welcome to Lumen</h1>
-                  <p>A calm, thorough cleaner that knows where developer tools, apps and macOS hide their junk.</p>
+                  <p>A calm, thorough cleaner that knows where macOS, your apps and your tools hide their junk.</p>
                   <ul className={styles.points}>
                     <li>
-                      <SparkleIcon size={16} /> Smart Scan finds caches across 30+ tools in seconds
+                      <SparkleIcon size={16} /> Smart Scan checks 50+ places: caches, old downloads, iPhone backups and more
                     </li>
                     <li>
                       <ShieldIcon size={16} /> Only offers what’s safe; anything personal is off-limits

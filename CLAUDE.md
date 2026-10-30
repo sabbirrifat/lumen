@@ -18,7 +18,8 @@ Releases: bump `version` in package.json, move CHANGELOG's Unreleased entries un
 
 - `src/shared/types.ts` — the IPC contract (`LumenApi`, events). Main, preload and renderer all import it.
 - `src/main/engine/` — pure Node, no Electron imports, so Vitest can test it directly.
-  - `rules/` — one `CleanupRule` per thing to clean, grouped by category. `contentsRule` / `pathsRule` in `helpers.ts` cover most cases.
+  - `rules/` — one `CleanupRule` per thing to clean, one file per category (`system`, `apps`, `files`, `devices`, `developer` + `xcode`, `ai`). `contentsRule` / `pathsRule` in `helpers.ts` cover most cases. Category order and labels for the UI live in `renderer/src/lib/categories.tsx`.
+  - Read plists with `readPlist` (`plist.ts`), not `plutil -convert json`, which fails on dates and data.
   - `scanner.ts` → `cleaner.ts`: a clean re-scans each rule first, then sends every path through `guard.ts`.
   - `spaceLens.ts`, `largeFiles.ts`, `uninstaller.ts` — the other features.
 - `src/main/ipc.ts` — the only place engine meets Electron (`shell.trashItem`, dialogs, icons).
@@ -33,7 +34,9 @@ Releases: bump `version` in package.json, move CHANGELOG's Unreleased entries un
 ## Safety rules (don't loosen without a test)
 
 - Every deletion goes through `assertDeletable` (cache rules) or `assertTrashable` (user files). Targets must sit strictly inside a rule's declared `roots`, never at or above home, never in a personal folder (`DENIED`), never through a symlinked parent.
-- Caches are deleted; user-chosen files (Large & Old Files, Space Lens, Uninstaller) always go to the Trash.
+- Caches are deleted; user-chosen files (Large & Old Files, Space Lens, Uninstaller) and rules marked `toTrash` (installers, device backups, deleted-app leftovers) always go to the Trash. The cleaner refuses a `toTrash` rule rather than delete when no Trash function is passed.
+- The deleted-app leftovers rule keeps anything from a vendor (first two bundle-id segments) with an app still installed, and anything Apple's; if Spotlight can't list installed apps it's blocked.
+- With `LUMEN_HOME` set, "the Trash" is `$LUMEN_HOME/.Trash` (see `moveToTrash` in `ipc.ts`), so the E2E test never touches the real one.
 - Rules for an app are blocked while it runs. The uv rule keeps archives that running processes use.
 - With `LUMEN_HOME` set, `ctx.external` is false: rules must not call tools that act on real state (docker, simctl).
 

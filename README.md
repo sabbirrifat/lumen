@@ -5,8 +5,8 @@
 <h1 align="center">Lumen</h1>
 
 <p align="center">
-  <strong>A calm, thorough, open-source cleaner for your Mac, built with developers in mind.</strong><br />
-  Finds the gigabytes other cleaners miss: package caches, old browser builds, simulators, model downloads and runaway logs.
+  <strong>A calm, thorough, open-source cleaner for every Mac, with extra care for developers.</strong><br />
+  Clears browser and app caches, forgotten installers, old iPhone backups and leftovers from deleted apps, plus the package caches, simulators and model downloads that other cleaners miss.
 </p>
 
 <p align="center">
@@ -23,21 +23,18 @@
 
 ## Why Lumen
 
-Most Mac cleaners look at browser caches and system logs, then stop. If you write code, that's the small stuff. The big wins hide in places like these:
+Every Mac slowly fills up with things nobody asked to keep:
 
-- 30 GB of npm downloads you'll never need again
-- 10 GB of Python wheels and `uvx` tool environments
-- Ten old Chrome builds that Puppeteer downloaded over the years
-- A MongoDB log that has been growing for a year with no rotation
-- Simulators from an Xcode you uninstalled long ago
+- **Everyone:** browser and app caches, installers left in Downloads after the app was installed, downloads that never finished, backups of an iPhone you sold years ago, and data from apps you deleted long ago.
+- **Developers** have it worse. Consumer cleaners stop at the basics, but the big wins hide elsewhere: 30 GB of npm downloads, 10 GB of Python wheels, ten old Chrome builds Puppeteer collected, a database log that has grown for a year, simulators from an Xcode you uninstalled.
 
-Lumen knows where these live, measures them, explains each one in plain language, and only pre-selects what's safe. It is free, MIT-licensed, makes no network requests, and needs no account.
+Lumen knows where all of these live, measures them, explains each one in plain language, and only pre-selects what's safe. Your own files, like installers and backups, go to the Trash instead of being deleted. It is free, MIT-licensed, makes no network requests, and needs no account.
 
 ## Features
 
 | | |
 |---|---|
-| **Smart Scan** | One click checks 37 known locations in seconds, with live progress and a 3D orb that reacts as it works. |
+| **Smart Scan** | One click checks 51 known locations in seconds, with live progress and a 3D orb that reacts as it works. |
 | **Cleanup** | Every finding is grouped, sized and explained. Safe items are ticked; anything that needs judgment is marked **Review**. |
 | **Space Lens** | An interactive sunburst of your home folder. Click a ring to go inside, the center to go back up. |
 | **Large & Old Files** | Big files you haven't opened in months, filtered by size, age and kind, with Quick Look. They go to the Trash, never straight to deletion. |
@@ -53,24 +50,27 @@ Lumen knows where these live, measures them, explains each one in plain language
 
 ## What Lumen cleans
 
-Items marked ✓ are pre-selected after a scan. **Review** items are listed but left for you to decide.
+Items marked ✓ are pre-selected after a scan. **Review** items are listed but left for you to decide. 🗑 means the files move to the Trash instead of being deleted.
 
 | Category | What | Default |
 |---|---|---|
-| **Developer tools** | npm cache · pnpm store · Yarn 1 + Berry caches · pip cache · uv cache (keeps environments a running tool uses) | ✓ |
+| **System junk** | Application caches in `~/Library/Caches` (skips apps that are running) · app logs · crash reports | ✓ |
+| | Leftovers from deleted apps: containers, saved state and web data of apps that are no longer installed 🗑 | Review |
+| **Browsers & apps** | Safari, Chrome, Firefox, Edge, Brave, Arc and Vivaldi caches (never cookies, history, passwords or tabs) | ✓ |
+| | Slack, Microsoft Teams, Discord, Notion, Figma, Obsidian, VS Code, Cursor and Windsurf caches | ✓ |
+| | Copies of attachments you opened in Mail (the originals stay in your mailbox) | Review |
+| **Downloads & Trash** | Downloads that stopped partway 🗑 | ✓ |
+| | Installers (`.dmg`, `.pkg`) in Downloads older than a week 🗑 · Trash | Review |
+| **iPhone & iPad** | Software updates Finder downloaded | ✓ |
+| | Device backups, labelled with the device name and date 🗑 | Review |
+| **Developer tools** | npm · pnpm · Yarn · pip · uv (keeps environments a running tool uses) · node-gyp · TypeScript · CocoaPods · Gradle · Homebrew | ✓ |
 | | Old Puppeteer and Playwright browsers (keeps the newest of each) | ✓ |
-| | node-gyp headers · TypeScript type cache · CocoaPods · Gradle · Homebrew downloads | ✓ |
 | | MongoDB log (emptied in place, safe while it runs) · Homebrew service logs | ✓ |
-| | Old Node.js versions from nvm (keeps the newest of each major and your default) | Review |
-| | `node_modules` in projects untouched for 60+ days | Review |
-| | Docker dangling images and build cache (volumes are never touched) | Review |
-| **Xcode & simulators** | DerivedData · simulator caches | ✓ |
-| | Device support files · archives · simulator devices | Review |
-| **App caches** | Chrome, Edge and Brave caches (never cookies, history or passwords) | ✓ |
-| | VS Code, Cursor, Windsurf, Slack and Discord caches | ✓ |
-| **System junk** | Application caches in `~/Library/Caches` · app logs · crash reports | ✓ |
-| | Trash | Review |
+| | Xcode DerivedData · simulator caches | ✓ |
+| | Old Node.js versions from nvm · `node_modules` in projects untouched for 60+ days · Docker build cache and dangling images · Xcode device support files and archives · simulator devices | Review |
 | **AI tools** | Hugging Face models (keeps your login token) · Ollama models · Antigravity data | Review |
+
+Safari, Mail, iPhone backups and the Trash are protected by macOS: Lumen can only see them once you give it Full Disk Access.
 
 Every rule lives in [`src/main/engine/rules`](src/main/engine/rules). Adding one is a great first contribution: see [CONTRIBUTING.md](CONTRIBUTING.md#adding-a-cleanup-rule).
 
@@ -80,7 +80,8 @@ Deleting files is the one thing a cleaner must never get wrong, so Lumen is buil
 
 - **Every deletion is checked by a guard.** A path must sit strictly inside the folders its rule declared. It can never be your home folder or anything above it, never inside Documents, Desktop, Pictures, Movies, Music, iCloud Drive, Mail, Messages or Keychains, and never reached through a symlink that points elsewhere.
 - **Apps are left alone while they run.** If Chrome is open, Lumen tells you to quit it instead of pulling its cache out from under it.
-- **Files you choose go to the Trash.** Large files, Space Lens items and uninstalled apps are moved to the Trash, so you can put them back.
+- **Your own files go to the Trash.** Installers, device backups, leftovers of deleted apps, large files, Space Lens items and uninstalled apps are moved to the Trash, so you can put them back. Only caches and logs that apps rebuild are deleted outright.
+- **Leftovers are judged conservatively.** Data counts as a leftover only when no installed app from the same developer remains, and Apple's own data is never included.
 - **Each rule is re-checked right before cleaning**, in case something changed since the scan.
 - **Nothing leaves your Mac.** Lumen makes no network requests and collects no data.
 
@@ -96,7 +97,7 @@ Lumen is provided as-is, without warranty (see [LICENSE](LICENSE)). Review what 
    xattr -dr com.apple.quarantine /Applications/Lumen.app
    ```
 
-4. Optional: give Lumen **Full Disk Access** (System Settings → Privacy & Security → Full Disk Access) so it can also measure the Trash and app containers. The first launch walks you through it.
+4. Recommended: give Lumen **Full Disk Access** (System Settings → Privacy & Security → Full Disk Access), then reopen it, so it can also clean Safari, Mail attachments, iPhone backups and the Trash. The first launch walks you through it.
 
 Requires macOS 13 Ventura or later on Apple silicon. Intel Macs can [build from source](#build-from-source) for now; an Intel/universal build is a welcome contribution.
 

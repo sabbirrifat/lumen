@@ -1,7 +1,7 @@
-import { readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { joinAll, list, tilde } from '../fsutil';
-import { contentsRule, homePath, libPath } from './helpers';
+import { installedBundleIds } from '../uninstaller';
+import { contentsRule, libPath } from './helpers';
 import type { CleanupRule } from './types';
 
 /** Lumen's own caches, and Apple's, which system services rely on. */
@@ -37,21 +37,60 @@ export function appCachesRule(specificRules: CleanupRule[]): CleanupRule {
   };
 }
 
-const trash: CleanupRule = {
-  id: 'trash',
-  name: 'Trash',
+/**
+ * Library folders named after an app's bundle id. Caches aren't here: the application caches
+ * rule already clears those for installed and deleted apps alike.
+ */
+const LEFTOVER_KINDS = ['Containers', 'Saved Application State', 'HTTPStorages', 'WebKit', 'Application Scripts'];
+const BUNDLE_ID = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+){2,}$/;
+
+/**
+ * The bundle id a Library entry is named after. Entries can carry a suffix, a developer team
+ * prefix or a group prefix: "BQR82RBBHL.com.tinyspeck.slackmacgap", "group.com.foo.shared".
+ */
+export const bundleIdOf = (entry: string) =>
+  entry
+    .replace(/\.(savedState|binarycookies)$/i, '')
+    .replace(/^[A-Z0-9]{10}\./, '')
+    .replace(/^groups?\./i, '');
+
+/**
+ * "com.microsoft.oneauth" → "com.microsoft". Vendors share helpers and data between their apps,
+ * so anything from a vendor with an app still installed is kept. That misses some real
+ * leftovers, which is the safe way to be wrong.
+ */
+const vendorOf = (id: string) => id.toLowerCase().split('.').slice(0, 2).join('.');
+
+/** Apple's ids, including Shortcuts, which still uses the ids of Workflow, the app it grew from. */
+const appleOwned = (id: string) => id.includes('com.apple.') || id.startsWith('is.workflow.');
+
+const deletedAppLeftovers: CleanupRule = {
+  id: 'app-leftovers',
+  name: 'Leftovers from deleted apps',
   category: 'system',
   safety: 'review',
-  explain: 'Files you’ve already moved to the Trash. Emptying it can’t be undone.',
-  roots: (ctx) => [homePath(ctx, '.Trash')],
+  toTrash: true,
+  explain:
+    'Data that apps you’ve already removed left behind, such as their sandbox containers and saved window state. Nothing belonging to an app that’s still installed is included. It moves to the Trash.',
+  roots: (ctx) => LEFTOVER_KINDS.map((kind) => libPath(ctx, kind)),
   async scan(ctx) {
-    const dir = homePath(ctx, '.Trash');
-    try {
-      return { targets: joinAll(dir, await readdir(dir)), detail: '~/.Trash' };
-    } catch (error) {
-      const denied = (error as NodeJS.ErrnoException).code === 'EPERM';
-      return { targets: [], detail: '~/.Trash', blocked: denied ? 'Needs Full Disk Access' : undefined };
+    const installed = await installedBundleIds(ctx);
+    if (!installed) return { targets: [], detail: '~/Library', blocked: 'Turn on Spotlight so Lumen can tell which apps are installed' };
+    const installedVendors = new Set([...installed].map(vendorOf));
+    const targets: string[] = [];
+    const labels: Record<string, string> = {};
+    for (const kind of LEFTOVER_KINDS) {
+      const dir = libPath(ctx, kind);
+      for (const entry of await list(dir)) {
+        const id = bundleIdOf(entry);
+        const lower = id.toLowerCase();
+        if (!BUNDLE_ID.test(id) || appleOwned(lower) || NEVER_CLEAN(lower) || installedVendors.has(vendorOf(lower))) continue;
+        const target = path.join(dir, entry);
+        targets.push(target);
+        labels[target] = `${id} · ${kind}`;
+      }
     }
+    return { targets, labels, detail: `${targets.length} item${targets.length === 1 ? '' : 's'} from apps that are no longer installed` };
   },
 };
 
@@ -71,5 +110,5 @@ export const systemRules: CleanupRule[] = [
     explain: 'Reports saved after apps crashed. Only useful if you’re sending one to a developer.',
     dirs: (ctx) => [libPath(ctx, 'Logs', 'DiagnosticReports')],
   }),
-  trash,
+  deletedAppLeftovers,
 ];

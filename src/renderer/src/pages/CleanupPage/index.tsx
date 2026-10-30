@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import type { RuleResult } from '~shared/types';
 import { BroomIcon, ChevronIcon, RevealIcon, SparkleIcon } from '~components/icons';
+import { AccessNotice } from '~components/ui/AccessNotice';
 import { Button } from '~components/ui/Button';
 import { Checkbox } from '~components/ui/Checkbox';
 import { Badge, EmptyState, IconButton, PageHeader, SizeBar } from '~components/ui/Controls';
@@ -23,6 +24,7 @@ function RuleRow({ rule, max, color }: { rule: RuleResult; max: number; color: s
           <span className={styles.ruleName}>
             {rule.name}
             {rule.safety === 'review' && <Badge tone="review">Review</Badge>}
+            {rule.toTrash && <Badge>Moves to Trash</Badge>}
             {rule.blocked && <Badge tone="blocked">{rule.blocked}</Badge>}
           </span>
           <span className={styles.ruleDetail}>{rule.detail}</span>
@@ -49,7 +51,7 @@ function RuleRow({ rule, max, color }: { rule: RuleResult; max: number; color: s
                   {rule.items.map((item) => (
                     <li key={item.path}>
                       <span className={styles.itemPath} title={item.path}>
-                        {middleTruncate(tildePath(item.path, home), 90)}
+                        {item.label ?? middleTruncate(tildePath(item.path, home), 90)}
                       </span>
                       <span className="mono">{formatBytes(item.size)}</span>
                       <IconButton label="Show in Finder" onClick={() => void window.lumen.reveal(item.path)}>
@@ -110,6 +112,9 @@ export function CleanupPage() {
           Select none
         </Button>
       </PageHeader>
+      <div className={styles.notice}>
+        <AccessNotice />
+      </div>
 
       <div className={styles.groups}>
         {CATEGORIES.map((cat, gi) => {

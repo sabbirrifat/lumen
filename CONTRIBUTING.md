@@ -47,7 +47,7 @@ Everything you need day to day:
 
 Most rules take a few lines. Say a tool keeps a cache in `~/.cache/example` that is safe to delete:
 
-1. Add the rule to the right file in `src/main/engine/rules/` (`developer.ts`, `apps.ts`, `xcode.ts`, `system.ts` or `ai.ts`):
+1. Add the rule to the file for its category in `src/main/engine/rules/`: `system.ts`, `apps.ts` (browsers and apps), `files.ts` (Downloads and Trash), `devices.ts` (iPhone and iPad), `developer.ts`, `xcode.ts` or `ai.ts`:
 
    ```ts
    contentsRule({
@@ -62,9 +62,10 @@ Most rules take a few lines. Say a tool keeps a cache in `~/.cache/example` that
    - `contentsRule` deletes everything inside the folders and keeps the folders. `pathsRule` deletes specific sub-folders. For anything smarter (keep the newest version, skip files in use), write a full `CleanupRule`; `puppeteer` and `uv` in `developer.ts` are good examples.
    - Set `safety: 'review'` if deleting it costs the user something: a slow re-download, lost history, or a choice only they can make.
    - Set `app: 'App Name'` when the files belong to an app, so the rule is blocked while that app runs.
+   - Set `toTrash: true` when the targets are the user's own files rather than a cache (installers, backups, documents). They'll always be moved to the Trash, never deleted.
    - Write `explain` for a non-developer: what it is, and what happens after it's gone.
 
-2. Add a test in `tests/rules.test.ts` that builds a fake home, cleans the rule, and checks that the right files are gone **and** that anything that should survive still exists.
+2. Add a test in `tests/rules.test.ts` (developer rules) or `tests/everyday.test.ts` (everything else) that builds a fake home, cleans the rule, and checks that the right files are gone **and** that anything that should survive still exists. For `toTrash` rules, pass a fake `moveToTrash` and check the files arrived there.
 3. Run `npm run dry-run` to see what your rule finds on your own Mac.
 4. Add it to the table in the README.
 
@@ -75,7 +76,7 @@ Lumen deletes files, so these rules are non-negotiable. A PR that loosens one ne
 - Every deletion goes through `assertDeletable` (cache rules) or `assertTrashable` (files the user picked) in `guard.ts`. Never call `rm`, `fs.rm` or `shell.trashItem` on a path that skipped the guard.
 - A rule's `roots` must be as narrow as possible. Targets must sit strictly inside them.
 - Never touch personal data: Documents, Desktop, Photos, Mail, Messages, iCloud Drive, Keychains, cookies, browser history or passwords.
-- Files the user chooses go to the Trash. Only regenerable caches are deleted outright.
+- Files the user chooses, and rules over the user's own files (`toTrash`), go to the Trash. Only regenerable caches are deleted outright.
 - Don't clean files an app is using: set `app`, or detect in-use files like the `uv` rule does.
 - Tests must only ever touch generated fixtures. With `LUMEN_HOME` set, `ctx.external` is false and rules must not call tools that change real state, such as `docker` or `simctl`.
 
