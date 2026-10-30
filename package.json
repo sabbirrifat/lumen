@@ -9,7 +9,7 @@
     "dev": "electron-vite dev",
     "start": "electron-vite preview",
     "build": "npm run typecheck && electron-vite build",
-    "build:mac": "npm run build && electron-builder --mac --arm64",
+    "build:mac": "npm run build && electron-builder --mac --arm64 --publish never",
     "typecheck": "tsc --noEmit --composite false -p tsconfig.node.json && tsc --noEmit --composite false -p tsconfig.web.json",
     "lint": "eslint .",
     "test": "vitest run",
@@ -47,5 +47,25 @@
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "zustand": "^5.0.16"
-  }
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Sabbir Rifat"
+  },
+  "homepage": "https://github.com/sabbirrifat/lumen#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sabbirrifat/lumen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sabbirrifat/lumen/issues"
+  },
+  "keywords": [
+    "macos",
+    "cleaner",
+    "disk-space",
+    "developer-tools",
+    "electron",
+    "react"
+  ]
 }

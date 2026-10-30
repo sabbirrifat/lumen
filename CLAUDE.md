@@ -1,6 +1,8 @@
 # Lumen
 
-A Mac cleaner: Electron 45 + React 19 + TypeScript 6, built with electron-vite. Personal, unsigned arm64 build.
+A Mac cleaner: Electron 45 + React 19 + TypeScript 6, built with electron-vite. Open source (MIT) at github.com/sabbirrifat/lumen; ad-hoc signed arm64 builds, not notarized. Contributor docs: README.md, CONTRIBUTING.md, SECURITY.md.
+
+Releases: bump `version` in package.json, move CHANGELOG's Unreleased entries under the new version, commit, then push a `vX.Y.Z` tag. `.github/workflows/release.yml` builds the DMG and publishes the release.
 
 ## Commands
 

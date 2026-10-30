@@ -11,8 +11,11 @@ npmRebuild: false
 mac:
   category: public.app-category.utilities
   icon: build/icon.icns
-  # Personal build: unsigned, so no Apple Developer account is needed.
-  identity: null
+  # Ad-hoc signed, so no Apple Developer account is needed. Apple silicon refuses to run a
+  # downloaded app with no signature at all ("damaged"); ad-hoc lets users choose Open Anyway.
+  # Hardened runtime must be off, or library validation rejects Electron's own frameworks.
+  identity: '-'
+  hardenedRuntime: false
   target:
     - target: dir
       arch: arm64

@@ -1,0 +1,42 @@
+name: Suggest a cleanup rule
+description: A tool or app that leaves space-hogging files Lumen should know about
+labels: [cleanup rule]
+body:
+  - type: input
+    id: tool
+    attributes:
+      label: Tool or app
+      placeholder: Bun, Cargo, Android Studio…
+    validations:
+      required: true
+  - type: textarea
+    id: paths
+    attributes:
+      label: Where are the files?
+      description: One path per line. Use ~ for your home folder.
+      placeholder: ~/.bun/install/cache
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Is it safe to delete?
+      description: What happens after they're gone? Does the tool download or rebuild them? Is anything lost, like history, settings or sign-ins?
+    validations:
+      required: true
+  - type: input
+    id: size
+    attributes:
+      label: How big does it get?
+      placeholder: 4 GB on my Mac
+  - type: input
+    id: source
+    attributes:
+      label: Docs or source
+      description: A link that confirms the location and that it's a cache.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to add this rule myself (see CONTRIBUTING.md → Adding a cleanup rule)

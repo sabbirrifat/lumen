@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/sabbirrifat/lumen/discussions
+    about: Ask questions, share ideas and show what Lumen freed for you.
+  - name: Report a security problem
+    url: https://github.com/sabbirrifat/lumen/security/advisories/new
+    about: Anything that could make Lumen delete the wrong files. Reported privately.
